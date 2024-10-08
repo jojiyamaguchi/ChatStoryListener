@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お話聞きたい子</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            background-color: #f0f0f0;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #d1e7dd;
+            align-self: flex-end;
+        }
+        .ai-message {
+            background-color: #f8d7da;
+            align-self: flex-start;
+        }
+        #input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+        #input-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #input-container button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        #input-container button:hover {
+            background-color: #0056b3;
+        }
+        .save-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .save-button {
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .save-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="save-buttons">
+        <button class="save-button" onclick="saveAsPDF()">PDF保存</button>
+        <button class="save-button" onclick="saveAsImage()">画像保存</button>
+    </div>
+    <div id="chat-container"></div>
+    <div class="save-buttons">
+        <button class="save-button" onclick="saveAsPDF()">PDF保存</button>
+        <button class="save-button" onclick="saveAsImage()">画像保存</button>
+    </div>
+    <div id="input-container">
+        <input type="text" id="user-input" placeholder="コメントを入力してください">
+        <button onclick="sendMessage()">送信</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.min.js"></script>
+    <script>
+        function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const messageText = userInput.value.trim();
+            if (messageText === '') return;
+
+            addMessage('user', messageText);
+            userInput.value = '';
+
+            const chatHistory = getChatHistory();
+            // AIの応答を生成するブラックボックス関数を呼び出す
+            // ここでchatHistoryをAIに渡す
+            // const aiResponse = generateAIResponse(chatHistory);
+
+            // AIの応答を追加する（仮の応答）
+            setTimeout(() => {
+                addMessage('ai', 'これはAIの応答です。');
+            }, 1000);
+        }
+
+        function addMessage(role, text) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}-message`;
+            messageDiv.textContent = text;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function getChatHistory() {
+            const chatContainer = document.getElementById('chat-container');
+            const messages = chatContainer.getElementsByClassName('message');
+            const chatHistory = Array.from(messages).map(message => {
+                return {
+                    role: message.classList.contains('user-message') ? 'user' : 'ai',
+                    text: message.textContent
+                };
+            });
+            return chatHistory;
+        }
+
+        function saveAsPDF() {
+            const chatContainer = document.getElementById('chat-container');
+            html2canvas(chatContainer, {backgroundColor: '#f0f0f0'}).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF();
+                pdf.addImage(imgData, 'PNG', 10, 10);
+                pdf.save('chat_history.pdf');
+            });
+        }
+
+        function saveAsImage() {
+            const chatContainer = document.getElementById('chat-container');
+            html2canvas(chatContainer, {backgroundColor: '#f0f0f0'}).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg');
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = 'chat_history.jpg';
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
